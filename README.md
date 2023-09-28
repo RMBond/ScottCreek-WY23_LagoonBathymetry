@@ -1,14 +1,14 @@
 WY23 Scott Creek Estuary Bathymetric Survey
 ================
-26 September, 2023
+28 September, 2023
 
 - [Introduction](#introduction)
 - [Workflow Summary](#workflow-summary)
   - [Dataset Descriptions](#dataset-descriptions)
 - [1. Field Notes](#1-field-notes)
 - [2. Raw Data Corrections](#2-raw-data-corrections)
-- [3. Correct echosounder point depths to account for
-  “draft”.](#3-correct-echosounder-point-depths-to-account-for-draft)
+- [3. ~~Correct echosounder point depths to account for
+  “draft”.~~](#3-correct-echosounder-point-depths-to-account-for-draft)
 - [4. Remove bad topo points and echo points that are too shallow or
   have low
   accuracy.](#4-remove-bad-topo-points-and-echo-points-that-are-too-shallow-or-have-low-accuracy)
@@ -93,7 +93,7 @@ The general workflow is:
 2.  Extract data from the R10s and correct raw data with OPUS output (if
     needed).
 
-3.  Correct echosounder point depths to account for “draft”.
+3.  ~~Correct echosounder point depths to account for “draft”~~ (Done).
 
 4.  Remove bad topo points and echo points that are too shallow or have
     low accuracy.
@@ -117,44 +117,47 @@ found in their corresponding folders.
 
 *Uncorrected* Base Station Files:
 
-1.  The <span style="color:purple">*SC_blue_xxx.csv*</span> datafile
-    contiants the *uncorrected* base station point.
+1.  The
+    <span style="color:purple">*Raw_Data/Scott_Blue_230922.csv*</span>
+    datafile contiants the keyed in base station point (based on WY22
+    OPUS correction, see field notes below).
 
-2.  The <span style="color:purple">*727726251.o*</span> datafile is the
-    *uncorrected* base station RINEX file that was submitted to OPUS for
-    correcting.
+2.  The <span style="color:purple">*OPUS/727726251.o*</span> datafile is
+    the *uncorrected* base station RINEX file that can be submitted to
+    OPUS for double checking the correction.
 
 *Uncorrected* Rover Files:
 
-3.  The <span style="color:purple">*SC_grn_xxx.csv*</span> datafile
-    consists of the *uncorrected* green rover topo points.
+3.  The
+    <span style="color:purple">*Raw_Data/Scott_Grn_230922.csv*</span>
+    datafile consists of the *uncorrected* green rover topo points.
 
 4.  The echosounder points were broken into two job files to reduce file
     size (this was a challenge in WY22).
-    <span style="color:purple">*SC_red_xxx_withdepth.csv*</span> and
-    <span style="color:purple">*SC_red_xxx_withdepth.csv*</span>
-    datafiles consists of the *uncorrected* red rover topo and
-    echosounder points. The depth field was extracted by L. Harrison
-    using Trimble Business Center software.
+    <span style="color:purple">*Scott_Red_230922.csv*</span> and
+    <span style="color:purple">*Scott_Red2_230922.csv*</span> datafiles
+    consists of the *uncorrected* red rover topo and echosounder points.
+    The depth and accuracy fields were extracted by L. Harrison using
+    Trimble Business Center software.
 
-<span style="color:blue">*OPUS Corrected*</span> Rover Files:
+<span style="color:blue">*Corrected*</span> Rover Files:
 
 5.  The
-    <span style="color:purple">*OUT.FullDataset_Corrected_xxx*</span>
-    datafile is the full (all rtk points) *OPUS corrected* dataset. It
-    can be used as a starting point for any analysis.
+    <span style="color:purple">*Output_Data/OUT.FullDataset_Corrected_xxx*</span>
+    datafile is the full (all rtk points) dataset. It can be used as a
+    starting point for any analysis.
 
 6.  The
-    <span style="color:purple">*OUT.BedSurface_Corrected_2xxx*</span>
-    datafile is the *OPUS corrected* bed surface input file (topo, wse,
-    and echosounder point) for making TIN and raster files in ArcMap.
-    Note the WaterSE column has been removed (not needed).
+    <span style="color:purple">*Output_Data/OUT.BedSurface_Corrected_xxx*</span>
+    datafile is the bed surface input file (topo, wse, and echosounder
+    point) for making TIN and raster files in ArcMap. Note the WaterSE
+    column has been removed (not needed).
 
 7.  The
-    <span style="color:purple">*OUT.WaterSurface_Corrected_xxx*</span>
-    datafile is the *OPUS corrected* water surface input file (wse and
-    echosounder point) for making TIN and raster files in ArcMap. Note
-    the BedSE column has been removed (not needed).
+    <span style="color:purple">*Output_Data/OUT.WaterSurface_Corrected_xxx*</span>
+    datafile is the water surface input file (wse and echosounder point)
+    for making TIN and raster files in ArcMap. Note the BedSE column has
+    been removed (not needed).
 
 <br>
 
@@ -213,7 +216,10 @@ Survey Notes:
   - Code = echo.
   - Job 1: Started at point number 1000 and stoped at point 5446.
   - Job 2: Started st point number 5500 and stoped at point 7022. (Used
-    same antenna height and draft as Job 1)
+    same antenna height and draft as Job 1).
+  - Draft was keyed into the unit so Trimble dusiness Center software
+    applied this amoutn to the depth measurments. Therefore the draft
+    correcting step is not needed.
 
 - Survey Codes:
 
@@ -286,23 +292,16 @@ Red.opus <- Red.dat %>%
 
 <br>
 
-# 3. Correct echosounder point depths to account for “draft”.
+# 3. ~~Correct echosounder point depths to account for “draft”.~~
 
 <img align="Right" width="300" height="300" src="Figures/Draft.jpg">
 
 The sounding instrument is mounted slightly into the water. This little
-bit of depth, known as “draft”, needs to be added to all of the depth
-values to get total water depth (d in figure to the right). The draft =
-0.27 meters.
-
-``` r
-
-#### Goal: Correct echosounder points to account for "draft".
-
-Red.draft <- Red.opus %>% 
-  mutate(Depth_cor = Depth + 0.27) %>% 
-  select(-Depth) #remove raw depth column. #11772 obs of 7 var.
-```
+bit of depth, known as “draft”, typically needs to be added to all of
+the depth values to get total water depth (d in figure to the right).
+NOTE DRAFT WAS KEYED INTO THE TSC3 AND HAS ALREADY BEEN APPLIED TO THE
+DEPTH POINTS. THEREFORE THIS STEP IS SKIPPED FOR THIS WATER YEAR’S
+SURVEY.
 
 # 4. Remove bad topo points and echo points that are too shallow or have low accuracy.
 
@@ -311,7 +310,7 @@ Point filters:
 - Topo points were removed based on fieldnotes.
 
 - Echosounder points were removed based on a vertical precision
-  threshold = 0.09ft and sounding depths less than 1.3ft (the shallowest
+  threshold = 0.03cm and sounding depths less than 0.4m (the shallowest
   depth a return could be detected by the sonarmite).
 
 ``` r

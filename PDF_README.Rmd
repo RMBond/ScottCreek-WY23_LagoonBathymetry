@@ -1,12 +1,13 @@
 ---
-title: "WY23 Scott Creek Estuary Bathymetric Survey"
-date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: 
-  github_document:
+title: "WY22 Scott Creek Lagoon Bathymetric Survey"
+author: "Rosealea Bond (lea.bond@noaa.gov)"
+date: "2023-09-29`"
+output:
+  pdf_document:
     toc: true
----
+    number_sections: true
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+---
 
 ```{r, echo = FALSE}
 knitr::opts_chunk$set(

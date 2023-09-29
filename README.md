@@ -71,7 +71,7 @@ margins of the Scott Creek Estaury/Lagoon (Photo: November
 </center>
 
 Water Year 2023 (WY23) had large flushing flows which moved large
-amounts of sediment throughout the mainstem. We believe course sediment
+amounts of sediment throughout the mainstem. We believe coarse sediment
 reached the Scott Creek Estuary/Lagoon whereas most fine sediment
 reached the area in WY2022 (right figure shows fine sediment deposition
 in the estuary 30 November 2021). This repository focuses on data
@@ -241,6 +241,9 @@ Survey Notes:
 
 - The North Marsh and South Pond were wet during the survey (pre-fire
   times this was rare in the late summer).
+
+- Sediment within the survey area was a mixtrure of mudstone cobble,
+  gravel, and sand. (More coarse then previous years).
 
 <br>
 

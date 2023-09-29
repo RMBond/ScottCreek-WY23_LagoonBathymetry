@@ -35,7 +35,7 @@ The general workflow is:
 
 1. Collect topo and echo sounder points.
 
-2. Extract data from the R10s and correct raw data with OPUS output (if needed).
+2. Extract data from the R10s ~~and correct raw data with OPUS output~~.
 
 3. ~~Correct echosounder point depths to account for "draft"~~ (Done).
 
@@ -65,15 +65,15 @@ The <span style="color:purple">*Data*</span> folder contains all of the rtk data
 
 3. The <span style="color:purple">*Raw_Data/Scott_Grn_230922.csv*</span> datafile consists of the *uncorrected* green rover topo points.
 
-4. The echosounder points were broken into two job files to reduce file size (this was a challenge in WY22). <span style="color:purple">*Scott_Red_230922.csv*</span> and <span style="color:purple">*Scott_Red2_230922.csv*</span> datafiles consists of the *uncorrected* red rover topo and echosounder points. The depth and accuracy fields were extracted by L. Harrison using Trimble Business Center software.
+4. The echosounder points were broken into *two* job files to reduce file size (this was a challenge in WY22). <span style="color:purple">*Scott_Red_230922.csv*</span> and <span style="color:purple">*Scott_Red2_230922.csv*</span> datafiles consists of the *uncorrected* red rover topo and echosounder points. The depth and accuracy fields were extracted by L. Harrison using Trimble Business Center software.
 
 <span style="color:blue">*Corrected*</span> Rover Files:
 
-5. The <span style="color:purple">*Output_Data/OUT.FullDataset_Corrected_xxx*</span> datafile is the full (all rtk points) dataset. It can be used as a starting point for any analysis.
+5. The <span style="color:purple">*Output_Data/OUT.FullDataset_Corrected_20230929*</span> datafile is the full (all rtk points) dataset. It can be used as a starting point for any analysis.
 
-6. The <span style="color:purple">*Output_Data/OUT.BedSurface_Corrected_xxx*</span> datafile is the bed surface input file (topo, wse, and echosounder point) for making TIN and raster files in ArcMap. Note the WaterSE column has been removed (not needed).
+6. The <span style="color:purple">*Output_Data/OUT.BedSurface_Corrected_20230929*</span> datafile is the bed surface input file (topo, wse, and echosounder point) for making TIN and raster files. Note the WaterSE column has been removed (not needed).
 
-7. The <span style="color:purple">*Output_Data/OUT.WaterSurface_Corrected_xxx*</span> datafile is the water surface input file (wse and echosounder point) for making TIN and raster files in ArcMap. Note the BedSE column has been removed (not needed).
+7. The <span style="color:purple">*Output_Data/OUT.WaterSurface_Corrected_20230929*</span> datafile is the water surface input file (wse and echosounder point) for making TIN and raster files. Note the BedSE column has been removed (not needed).
 
 <br>
 
@@ -85,9 +85,9 @@ On 22 September 2023, R. Bond and A. Hay surveyed the estuary with three RTK uni
 
 Survey Notes:
 
-* Survey Units: Meters; 
+* Survey Units: Meters. 
 
-* Horizontal Datum: NAD83 10 North
+* Horizontal Datum: NAD83 10 North.
 
 * Vertical Datum: Conus GEOID12A.
 
@@ -97,7 +97,7 @@ Survey Notes:
     + Settup on ESA CP02 and ran for ~5 hours (same point as WY22). 
     + Antenna height to quick release = 1.5m.
     + Job Name: Scott_blue_230922.
-    + Keyed in base coordinates based on WY22 OPUS correction and 1cm added to elevation (Z) to account for slightly different GEOID models (OPUS used CONUS2018 and we used CONUS2012)
+    + "Keyed in" base coordinates based on WY22 OPUS correction and 1cm added to elevation (Z) to account for slightly different GEOID models (OPUS used CONUS2018 and we used CONUS2012)
         + N = 4099614.797m
         + E = 568610.850m
         + Z = 8.382m
@@ -126,24 +126,15 @@ Survey Notes:
     + wse - Water Surface Elevation at the edge of bank (transition from wet to dry).
     + echo - wet echosounder point (need to incorperate depth measurments to elevation to get BSE).
 
-* The mouth was open during the survey (so reffering to estuary rather than lagoon). Mouth runs north to blufs and spills onto the reef. There is a mudstone ledge that is acting as an elevation control (despite water being able to still flow out). The wetted area and depth looks comparable to previous water years.
+* The mouth was open during the survey (so reffering to estuary rather than lagoon). Mouth runs north to blufs and spills onto the reef. There is a mudstone ledge that is acting as an elevation control (despite water being able to still flow out). The wetted area and depth looks comparable to previous water years. The mouth *finally* closed on 26 September 2023.
 
-* The North marsh and South pond were wet during the survey (pre-fire times this was rare in the late summer).
+* The North Marsh and South Pond were wet during the survey (pre-fire times this was rare in the late summer).
 
 <br>
 
 # 2. Raw Data Corrections
 
-When starting the base station we "used a "here" "keyed in" the point using WU22 OPUS correction (coordinates above).
-
-
-
-
-
-####START WORKING ON CODE HERE ####
-
-
-
+When starting the base station we "keyed in" the point using WY22 OPUS correction (coordinates above).
 
 <br>
 
@@ -161,28 +152,35 @@ options(digits = 10) #Global option so you can see the entire number for Northin
 #### Goal: Correct raw data with OPUS correction.
 
 #Read in RTK files
-Green.dat <- read.csv('Data/Raw_Data/SC_grn_xxx.csv', sep = ",", header = T) # Topo points (362 obs, 5 var).
-Red.dat <- read.csv('Data/Raw_Data/SC_red_xxx_withdepth.csv', sep = ",", header = T) # Echosounder points (11772 obs, 21 var).
+Green.dat <- read.csv('Data/Raw_Data/Scott_Grn_230922.csv', sep = ",", header = T) # Topo points (796 obs, 5 var).
+Red1.dat <- read.csv('Data/Raw_Data/Scott_Red_230922.csv', sep = ",", header = T) # Echosounder points (4450 obs, 21 var).
+Red2.dat <- read.csv('Data/Raw_Data/Scott_Red2_230922.csv', sep = ",", header = T) # Echosounder points (1523 obs, 21 var).
+
+#Join Echosounder points together and remove extra columns
+Red.dat <- full_join(Red1.dat, Red2.dat) %>% 
+  select(-GPSweek, -Seconds, -SurvMeth, -NumSat, -PDOP, -HDOP, -VDOP, -RMS, -NumPosUsed, -Latency, 
+         -Battery.Voltage, -Quality, -Flags)#5972obs of 8 var.
 
 #Make sure the data are loaded correctly
 str(Green.dat)
 str(Red.dat) #Looks Good.
 
-#OPUS Correct datasets:
-#Topo Points:
-Green.opus <- Green.dat %>% 
-  mutate(North_cor = North + 6.557,
-         East_cor = East - 3.309,
-         Elevation_cor = Elevation - 2.348) %>% 
-  select(Point, North_cor, East_cor, Elevation_cor, Code) # 359 Obs of 5 var.
-      
-#Echosounder Points:
-Red.opus <- Red.dat %>% 
-  mutate(North_cor = North + 6.557,
-         East_cor = East - 3.309,
-         Elevation_cor = Elevation - 2.348) %>% # Apply OPUS correction
-  select(Point, North_cor, East_cor, Elevation_cor, Depth, Code, VertPrec) #Note: Elevation and Depth are adjusted further below. # 11772 obs of 7 var.
-  
+#OPUS Correction wasn't applied (needed) for this survey.
+
+# #Topo Points:
+# Green.opus <- Green.dat %>% 
+#   mutate(North_cor = North + 6.557,
+#          East_cor = East - 3.309,
+#          Elevation_cor = Elevation - 2.348) %>% 
+#   select(Point, North_cor, East_cor, Elevation_cor, Code) # 359 Obs of 5 var.
+#       
+# #Echosounder Points:
+# Red.opus <- Red.dat %>% 
+#   mutate(North_cor = North + 6.557,
+#          East_cor = East - 3.309,
+#          Elevation_cor = Elevation - 2.348) %>% # Apply OPUS correction
+#   select(Point, North_cor, East_cor, Elevation_cor, Depth, Code, VertPrec) #Note: Elevation and Depth are adjusted further below. # 11772 obs of 7 var.
+#   
   
 ```
 
@@ -192,7 +190,7 @@ Red.opus <- Red.dat %>%
 
 <img align="Right" width="300" height="300" src="Figures/Draft.jpg">
 
-The sounding instrument is mounted slightly into the water. This little bit of depth, known as "draft", typically needs to be added to all of the depth values to get total water depth (d in figure to the right). NOTE DRAFT WAS KEYED INTO THE TSC3 AND HAS ALREADY BEEN APPLIED TO THE DEPTH POINTS. THEREFORE THIS STEP IS SKIPPED FOR THIS WATER YEAR'S SURVEY.
+The sounding instrument is mounted slightly into the water. This little bit of depth, known as "draft", typically needs to be added to all of the depth values to get total water depth (d in figure to the right). NOTE DRAFT WAS KEYED INTO THE TSC3 AND HAS ALREADY BEEN APPLIED TO THE DEPTH POINTS. THEREFORE THIS STEP IS SKIPPED FOR THIS YEAR'S SURVEY.
 
 # 4. Remove bad topo points and echo points that are too shallow or have low accuracy.
 
@@ -207,31 +205,22 @@ Point filters:
 #### Goal: Correct topo and echosounder points based on field notes and echo sounder point accuracy.
 
 #Topo points:
-Green.cor <- Green.opus %>%
-  mutate(BedSE = Elevation_cor) %>% #Renaming since these topos are bed surface elevation.
-  select(-Elevation_cor) %>%        #Removing old named column.
-  filter(Point != "BASE",
-         Point != 337,
-         Point != 345)  #Remove three points.
-
-Green.cor$Code[Green.cor$Point == 7] <- "topo"
-Green.cor$Code[Green.cor$Point == 108] <- "topo"
-Green.cor$Code[Green.cor$Point == 109] <- "topo"
-Green.cor$Code[Green.cor$Point == 163] <- "topo"
-Green.cor$Code[Green.cor$Point == 164] <- "topo" #Change code form WSE to topo.
-
-# 359 Obs of 5 var.
+Green.cor <- Green.dat %>%
+  mutate(BedSE = Elevation) %>% #Renaming since these topos are bed surface elevation.
+  select(-Elevation) %>%        #Removing old named column.
+  filter(Pt.name != "BASE",
+         Pt.name != 793)  #Remove two points (795 obs of 5 var).
 
 #Corrected topo point dataset:
-# write.table(Green.cor, file = 'Data/Output_Data/OUT.Green_Corrected_20221005.csv', sep = ',', row.names = F)
+# write.table(Green.cor, file = 'Data/Output_Data/OUT.Green_Corrected_20230929.csv', sep = ',', row.names = F)
 
-#Remove echosounder points based on vertical precision threshold between 0.09 - 0.16ft and depths less than 1.3ft.
-Red.cor <- Red.draft %>% 
-  filter(Code == "echo",  #Remove non-echo points. #11769 obs
-         VertPrec < 0.09, #Remove points based on vertical precision threshold #11067 obs
-         Depth_cor > 1.3) #Remove shallow points #10977 obs
+#Remove echosounder points based on vertical precision threshold of 0.03m and depths less than 0.4m.
+Red.cor <- Red.dat %>% 
+  filter(Code == "echo",  #Remove non-echo points. #5969 obs
+         VertPrec < 0.03, #Remove points based on vertical precision threshold #5507 obs
+         Depth > 0.4) #Remove shallow points #5393 obs
 
-#10977 obs of 7 var.
+#5393 obs of 8 var.
 
 ```
 
@@ -245,27 +234,27 @@ BedSE = OPUS corrected elevation + draft corrected depth.
 ####Goal: Combine elevations with depth to get BedSE.
 
 Red.cor2 <- Red.cor %>%
-  mutate(BedSE = Elevation_cor + Depth_cor)
+  mutate(BedSE = Elevation + Depth)
 
-#10977 obs. of 8 var.
+#5393 obs. of 9 var.
 
 ```
 
 # 6. Calculate water surface elevation (WaterSE) from echosounder points.
 
-Water SE (for the echosounder points) = Elevation_cor - draft (0.650 ft). 
+Water SE (for the echosounder points) = Elevation - draft (0.27m). 
 
 * Echosounder points can be used as water surface elevation refrences (i.e., Z point used in water surface TIN). 
 
-* "wse" points (collected by the green rover) indicated the wetted margin on the bank (i.e., X,Y,Z can be used in bed and water surface TINs). The wse points are important for creating the wetted boundary wihtin the lagoon.
+* "wse" points (collected by the green rover) indicated the wetted margin on the bank (i.e., X,Y,Z can be used in bed and water surface TINs). The wse points are important for creating the wetted boundary within the lagoon.
 
 ```{r, eval = FALSE}
 
 Red.cor3 <- Red.cor2 %>% 
-  mutate(WaterSE = Elevation_cor - 0.65) %>% 
-  select(Point, North_cor, East_cor, BedSE, WaterSE, Depth_cor, Code, VertPrec) #remove old elevation column.
+  mutate(WaterSE = Elevation - 0.27) %>% 
+  select(Pt.name, North, East, BedSE, WaterSE, Depth, Code, VertPrec) #remove old elevation column.
 
-#10977 obs. of 8 var.
+#5393 obs. of 8 var.
 
 #Corrected echosounder dataset:
 # write.table(Red.cor3, file = 'Data/Output_Data/OUT.Red_Corrected_20221005.csv', sep = ',', row.names = F)
@@ -282,42 +271,38 @@ Red.cor3 <- Red.cor2 %>%
 Green.cor.wse <- Green.cor %>%
   filter(Code == "wse") %>% 
   mutate(WaterSE = BedSE) # Make bed = water surface elevation since this is the wetted margin (used for water surface layer TIN below).
-#79 obs of 6 var.
+#91 obs of 6 var.
 
 Green.cor.topo <- Green.cor %>%
-  filter(Code != "wse") #280 of 5 var.
+  filter(Code != "wse") #704 obs of 5 var.
 
-Green.join <- full_join(Green.cor.topo, Green.cor.wse) #rejoin topo points #359 obs of 6 var.
+Green.join <- full_join(Green.cor.topo, Green.cor.wse) #rejoin topo points #795 obs of 6 var.
 
 #### OUTPUT - Full Dataset Output ####
 RTKData <- full_join(Green.join, Red.cor3) %>% 
-  select(Point, North_cor, East_cor, BedSE, WaterSE, Depth_cor, Code, VertPrec) #join topo and echosounder points #11336 obs of 8 var.
+  select(Pt.name, North, East, BedSE, WaterSE, Depth, Code, VertPrec) #join topo and echosounder points #6188 obs of 8 var.
 
 #Full corrected dataset:
-# write.table(RTKData, file = 'Data/Output_Data/OUT.FullDataset_Corrected_20221007.csv', sep = ',', row.names = F)
+# write.table(RTKData, file = 'Data/Output_Data/OUT.FullDataset_Corrected_20230929.csv', sep = ',', row.names = F)
 
 ####  OUTPUT - Bed Surface TIN layer ####
 BedData <- RTKData %>%
-  filter(Code != "cp01",
-         Code != "bridge",
-         Code != "cb01b",
-         Code != "hwymark",
-         Code != "cpx") %>% #removing extra points that only matter to the base settup.
-  select(North_cor, East_cor, BedSE, Code, Point, VertPrec) #Don't need these columns for bed TIN.
+  filter(Code != "cp01") %>% #removing extra points that only matter to the base settup.
+  select(North, East, BedSE, Code, Pt.name, VertPrec) #Don't need these columns for bed TIN.
   
-#11331 obs of 6 var.
+#6186 obs of 6 var.
   
 #Bed Surface Points Only (Topo, echo, and wse = basic channel bed TIN for making ArcMap raster)
-# write.table(BedData, file = 'Data/Output_Data/OUT.BedSurface_Corrected_20221007.csv', sep = ',', row.names = F)
+# write.table(BedData, file = 'Data/Output_Data/OUT.BedSurface_Corrected_20230929.csv', sep = ',', row.names = F)
 
 ####  OUTPUT - Water Surface TIN layer ####
 
 WaterData <- RTKData %>%
   filter(Code == "wse"| Code == "echo") %>% #only water points.
-  select(North_cor, East_cor, WaterSE, Code, Point, VertPrec) #11056 of 6 var.
+  select(North, East, WaterSE, Code, Pt.name, VertPrec) #5484 of 6 var.
 
 #Water Surface Points Only (wse and echo = basic water surface TIN for visualizing depths in ArcMap raster)
-# write.table(WaterData, file = 'Data/Output_Data/OUT.WaterSurface_Corrected_20221007.csv', sep = ',', row.names = F)
+# write.table(WaterData, file = 'Data/Output_Data/OUT.WaterSurface_Corrected_20230929.csv', sep = ',', row.names = F)
 
 ```
 Some summaries:
@@ -326,41 +311,19 @@ Some summaries:
 #Goal: Summarise point types and range of depths.
 
 RTKData.sum <- RTKData %>%
-  filter(Code != "cp01",
-         Code != "bridge",
-         Code != "cb01b",
-         Code != "hwymark",
-         Code != "cpx") %>% 
+  filter(Code != "cp01") %>% 
   group_by(Code) %>% 
   summarise(n())
 
-Depth.plot <- ggplot(RTKData, aes( x = Depth_cor)) +
-  geom_histogram(binwidth = .5)+
+Depth.plot <- ggplot(RTKData, aes( x = Depth)) +
+  geom_histogram(binwidth = .25)+
   theme_classic() +
-  scale_x_continuous("Depth (ft)", limits = c(1,6), 
-                     breaks = c(1,2,3,4,5,6), 
-                     labels = c(1,2,3,4,5,6),
-                     expand = c(0,0))
-# ggsave("Figures/Depth_Histogram_20221006.jpg", width = 5, height = 3, units = "in", dpi = 650, device = "jpg")
+  scale_x_continuous("Depth (m)", limits = c(0.25,2.5), expand = c(0,0))
+# ggsave("Figures/Depth_Histogram_20230929.jpg", width = 5, height = 3, units = "in", dpi = 650, device = "jpg")
 
 ```
 
-<center>![Fig. X Histogram of echosounder depths after post-processing (Min = 1.66ft, Max =5.8ft ).](Figures/Depth_Histogram_20221006.jpg){width="50%"}</center>
+<center>![Fig. X Histogram of echosounder depths after post-processing (Min = 1.66ft, Max =5.8ft ).](Figures/Depth_Histogram_20230929.jpg){width="50%"}</center>
 
-
-# 8-10. in ArcMap (outside of R).
-
-8. Convert BSE points into TIN layer(in ArcMap).
-
-9. Convert TIN to raster layer (in ArcMap).
-
-10. TBD - Compair WY22 layer to ESA Dec 2016 layer. Raster or TIN differencing (in ArcMap? or R?).
-
-
-
-
-
-
-
-
-
+# 8. Share with Collaborators.
+Share with CSUMB. 

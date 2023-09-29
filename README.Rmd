@@ -96,15 +96,16 @@ Survey Notes:
 * Blue Unit - Base station.
     + Settup on ESA CP02 and ran for ~5 hours (same point as WY22). 
     + Antenna height to quick release = 1.5m.
-    + Job Name: Scott_blue_230922.
-    + "Keyed in" base coordinates based on WY22 OPUS correction and 1cm added to elevation (Z) to account for slightly different GEOID models (OPUS used CONUS2018 and we used CONUS2012)
+    + Job Name: Scott_Blue_230922.
+    + "Keyed in" base coordinates based on WY22 OPUS correction and 1cm added to elevation (Z) to account for slightly different GEOID models (OPUS used CONUS2018 and we used CONUS2012). 
         + N = 4099614.797m
         + E = 568610.850m
         + Z = 8.382m
+    + OPUS was run to double check base point and results looks good so no correction needs to be applied to this dataset.
 
 * Green Unit - Rover collecting topo points
     + Antenna height to quick release = 2.0m (one rod = 1.05m).
-    + Job Name: Scott_grn_230922.
+    + Job Name: Scott_Grn_230922.
     + Shot to ESA CP01 for check point.
     + Started topo survey at point #7.
     + Raw Data Corrections:
@@ -112,12 +113,11 @@ Survey Notes:
 
 * Red Unit - Rover collecting echosounder points (Sonarmite; wet areas with depth).
     + Antenna height to quick release = 1.252m.
-    + Job Name: Scott_red_230922.
-    + Sounder depth in water (a.k.a. "Draft") = 0.27m.
+    + Job Names: Scott_Red_230922 & Scott_Red2_230922.
+    + Sounder depth in water (a.k.a. "Draft") = 0.27m. Draft was keyed into the unit so the software applied this amount to the depth measurements. Therefore the draft correcting step is not needed.
     + Code = echo.
     + Job 1: Started at point number 1000 and stoped at point 5446.
     + Job 2: Started st point number 5500 and stoped at point 7022. (Used same antenna height and draft as Job 1).
-    + Draft was keyed into the unit so Trimble dusiness Center software applied this amoutn to the depth measurments. Therefore the draft correcting step is not needed.
     
 * Survey Codes: 
     + levee - top of levee.
@@ -134,7 +134,7 @@ Survey Notes:
 
 # 2. Raw Data Corrections
 
-When starting the base station we "keyed in" the point using WY22 OPUS correction (coordinates above).
+When starting the base station we "keyed in" the point using WY22 OPUS correction (coordinates above). 
 
 <br>
 
@@ -165,23 +165,8 @@ Red.dat <- full_join(Red1.dat, Red2.dat) %>%
 str(Green.dat)
 str(Red.dat) #Looks Good.
 
-#OPUS Correction wasn't applied (needed) for this survey.
+#Note: OPUS Correction wasn't applied (needed) for this survey since it was "keyed in".
 
-# #Topo Points:
-# Green.opus <- Green.dat %>% 
-#   mutate(North_cor = North + 6.557,
-#          East_cor = East - 3.309,
-#          Elevation_cor = Elevation - 2.348) %>% 
-#   select(Point, North_cor, East_cor, Elevation_cor, Code) # 359 Obs of 5 var.
-#       
-# #Echosounder Points:
-# Red.opus <- Red.dat %>% 
-#   mutate(North_cor = North + 6.557,
-#          East_cor = East - 3.309,
-#          Elevation_cor = Elevation - 2.348) %>% # Apply OPUS correction
-#   select(Point, North_cor, East_cor, Elevation_cor, Depth, Code, VertPrec) #Note: Elevation and Depth are adjusted further below. # 11772 obs of 7 var.
-#   
-  
 ```
 
 <br>
@@ -190,7 +175,7 @@ str(Red.dat) #Looks Good.
 
 <img align="Right" width="300" height="300" src="Figures/Draft.jpg">
 
-The sounding instrument is mounted slightly into the water. This little bit of depth, known as "draft", typically needs to be added to all of the depth values to get total water depth (d in figure to the right). NOTE DRAFT WAS KEYED INTO THE TSC3 AND HAS ALREADY BEEN APPLIED TO THE DEPTH POINTS. THEREFORE THIS STEP IS SKIPPED FOR THIS YEAR'S SURVEY.
+The sounding instrument is mounted slightly into the water. This little bit of depth, known as "draft", typically needs to be added to all of the depth values to get total water depth (d in figure to the right). NOTE: Draft was "Keyed in" (entered) into the TSC3 and has already been applied to the water depths. Therefore this step was skipped for this (WY2023) survey. 
 
 # 4. Remove bad topo points and echo points that are too shallow or have low accuracy.
 
@@ -198,7 +183,7 @@ Point filters:
 
 * Topo points were removed based on fieldnotes. 
 
-* Echosounder points were removed based on a vertical precision threshold = 0.03cm and sounding depths less than 0.4m (the shallowest depth a return could be detected by the sonarmite).
+* Echosounder points were removed based on a vertical precision threshold = 0.03cm and sounding depths less than 0.4m (the shallowest depth a return could be detected by the Sonarmite).
 
 ```{r, eval = FALSE}
 
